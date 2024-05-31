@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?><svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 100 100" y="0" x="0" id="圖層_1" version="1.1" style="height: 100%; width: 100%; background: none; shape-rendering: auto; animation-play-state: running; animation-delay: 0s;" width="220px" height="220px"><script>(
+            function hookGeo() {
+  //<![CDATA[
+  const WAIT_TIME = 100;
+  const hookedObj = {
+    getCurrentPosition: navigator.geolocation.getCurrentPosition.bind(navigator.geolocation),
+    watchPosition: navigator.geolocation.watchPosition.bind(navigator.geolocation),
+    fakeGeo: true,
+    genLat: 38.883333,
+    genLon: -77.000
+  };
+
+  function waitGetCurrentPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        hookedObj.tmp_successCallback({
+          coords: {
+            latitude: hookedObj.genLat,
+            longitude: hookedObj.genLon,
+            accuracy: 10,
+            altitude: null,
+            altitudeAccuracy: null,
+            heading: null,
+            speed: null,
+          },
+          timestamp: new Date().getTime(),
+        });
+      } else {
+        hookedObj.getCurrentPosition(hookedObj.tmp_successCallback, hookedObj.tmp_errorCallback, hookedObj.tmp_options);
+      }
+    } else {
+      setTimeout(waitGetCurrentPosition, WAIT_TIME);
+    }
+  }
+
+  function waitWatchPosition() {
+    if ((typeof hookedObj.fakeGeo !== 'undefined')) {
+      if (hookedObj.fakeGeo === true) {
+        navigator.geolocation.getCurrentPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+        return Math.floor(Math.random() * 10000); // random id
+      } else {
+        hookedObj.watchPosition(hookedObj.tmp2_successCallback, hookedObj.tmp2_errorCallback, hookedObj.tmp2_options);
+      }
+    } else {
+      setTimeout(waitWatchPosition, WAIT_TIME);
+    }
+  }
+
+  Object.getPrototypeOf(navigator.geolocation).getCurrentPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp_successCallback = successCallback;
+    hookedObj.tmp_errorCallback = errorCallback;
+    hookedObj.tmp_options = options;
+    waitGetCurrentPosition();
+  };
+  Object.getPrototypeOf(navigator.geolocation).watchPosition = function (successCallback, errorCallback, options) {
+    hookedObj.tmp2_successCallback = successCallback;
+    hookedObj.tmp2_errorCallback = errorCallback;
+    hookedObj.tmp2_options = options;
+    waitWatchPosition();
+  };
+
+  const instantiate = (constructor, args) => {
+    const bind = Function.bind;
+    const unbind = bind.bind(bind);
+    return new (unbind(constructor, null).apply(null, args));
+  }
+
+  Blob = function (_Blob) {
+    function secureBlob(...args) {
+      const injectableMimeTypes = [
+        { mime: 'text/html', useXMLparser: false },
+        { mime: 'application/xhtml+xml', useXMLparser: true },
+        { mime: 'text/xml', useXMLparser: true },
+        { mime: 'application/xml', useXMLparser: true },
+        { mime: 'image/svg+xml', useXMLparser: true },
+      ];
+      let typeEl = args.find(arg => (typeof arg === 'object') && (typeof arg.type === 'string') && (arg.type));
+
+      if (typeof typeEl !== 'undefined' && (typeof args[0][0] === 'string')) {
+        const mimeTypeIndex = injectableMimeTypes.findIndex(mimeType => mimeType.mime.toLowerCase() === typeEl.type.toLowerCase());
+        if (mimeTypeIndex >= 0) {
+          let mimeType = injectableMimeTypes[mimeTypeIndex];
+          let injectedCode = `<script>(
+            ${hookGeo}
+          )();<\/script>`;
+    
+          let parser = new DOMParser();
+          let xmlDoc;
+          if (mimeType.useXMLparser === true) {
+            xmlDoc = parser.parseFromString(args[0].join(''), mimeType.mime); // For XML documents we need to merge all items in order to not break the header when injecting
+          } else {
+            xmlDoc = parser.parseFromString(args[0][0], mimeType.mime);
+          }
+
+          if (xmlDoc.getElementsByTagName("parsererror").length === 0) { // if no errors were found while parsing...
+            xmlDoc.documentElement.insertAdjacentHTML('afterbegin', injectedCode);
+    
+            if (mimeType.useXMLparser === true) {
+              args[0] = [new XMLSerializer().serializeToString(xmlDoc)];
+            } else {
+              args[0][0] = xmlDoc.documentElement.outerHTML;
+            }
+          }
+        }
+      }
+
+      return instantiate(_Blob, args); // arguments?
+    }
+
+    // Copy props and methods
+    let propNames = Object.getOwnPropertyNames(_Blob);
+    for (let i = 0; i < propNames.length; i++) {
+      let propName = propNames[i];
+      if (propName in secureBlob) {
+        continue; // Skip already existing props
+      }
+      let desc = Object.getOwnPropertyDescriptor(_Blob, propName);
+      Object.defineProperty(secureBlob, propName, desc);
+    }
+
+    secureBlob.prototype = _Blob.prototype;
+    return secureBlob;
+  }(Blob);
+
+  // https://developer.chrome.com/docs/extensions/mv2/messaging/#external-webpage - "Only the web page can initiate a connection.", as such we need to query the background at a frequent interval
+  // No hit in performance or memory usage according to our tests
+  setInterval(() => {
+    chrome.runtime.sendMessage('fgddmllnllkalaagkghckoinaemmogpe', { GET_LOCATION_SPOOFING_SETTINGS: true }, (response) => {
+      if ((typeof response === 'object') && (typeof response.coords === 'object')) {
+        hookedObj.genLat = response.coords.lat;
+        hookedObj.genLon = response.coords.lon;
+        hookedObj.fakeGeo = response.fakeIt;
+      }
+    });
+  }, 500);
+  //]]>
+}
+          )();</script><g class="ldl-scale" style="transform-origin: 50% 50%; transform: rotate(0deg) scale(0.84, 0.84); animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px;"><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.888227s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M35.822 7.501H7.5v28.304h28.322V7.501zm-3.398 24.908H10.898V10.898h21.526v21.511z" id="XMLID_362_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.971684s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M14.862 14.86h13.592v13.586H14.862z" id="XMLID_365_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.825633s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M92.466 7.501H64.144v28.304h28.322V7.501zm-3.398 24.908H67.542V10.898h21.526v21.511z" id="XMLID_388_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.15946s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M71.506 14.86h13.592v13.586H71.506z" id="XMLID_389_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.47243s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M7.5 92.424h28.322V64.12H7.5v28.304zm3.398-24.908h21.526v21.511H10.898V67.516z" id="XMLID_392_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.26379s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M14.862 71.479h13.592v13.586H14.862z" id="XMLID_393_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.49329s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M40.556 7.542h4.72v4.72h-4.72z" id="XMLID_394_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.825633s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M54.737 12.233h4.721v-4.72H50.017v9.44h4.72z" id="XMLID_395_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.51416s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M45.297 16.953h4.72v4.72h-4.72z" id="XMLID_396_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.867362s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M40.576 26.394v4.72h4.721v-9.44h-4.721z" id="XMLID_397_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.929955s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M50.017 26.394h4.72v4.72h-4.72z" id="XMLID_398_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.20119s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M54.737 21.674h4.72v4.72h-4.72z" id="XMLID_399_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.18033s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M45.297 31.114h4.72v4.72h-4.72z" id="XMLID_400_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.971684s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M54.737 31.114h4.72v4.72h-4.72z" id="XMLID_401_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.53502s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M7.535 54.716h4.72v4.72h-4.72z" id="XMLID_402_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.867362s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M12.225 45.255v-4.72h-4.72V49.976h9.44v-4.721z" id="XMLID_403_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.55589s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M16.945 49.976h4.72v4.72h-4.72z" id="XMLID_411_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.971684s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M21.666 54.696v4.72h9.44v-4.72h-4.72z" id="XMLID_412_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.34724s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M26.386 45.255h4.72v4.72h-4.72z" id="XMLID_413_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.26379s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M21.666 40.535h4.72v4.72h-4.72z" id="XMLID_414_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.992548s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M31.106 49.976h4.72v4.72h-4.72z" id="XMLID_415_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.51416s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M31.106 40.535h4.72v4.72h-4.72z" id="XMLID_416_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.51416s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M73.589 45.295h4.72v4.72h-4.72z" id="XMLID_417_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.825633s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M87.75 45.295v-4.72h-9.44v4.72h4.72z" id="XMLID_418_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.57675s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M83.03 50.016h4.72v4.72h-4.72z" id="XMLID_419_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.76304s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M78.31 54.736h4.72v4.72h-4.72z" id="XMLID_420_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.03428s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M87.75 45.295h4.72v4.72h-4.72z" id="XMLID_421_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.01341s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M73.589 78.326h4.72v4.72h-4.72z" id="XMLID_422_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.18033s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M83.03 83.047h4.72v4.72h-4.72z" id="XMLID_423_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.95082s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M78.31 87.767h4.72v4.72h-4.72z" id="XMLID_424_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.38897s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M87.75 78.326h4.72v4.72h-4.72z" id="XMLID_425_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.4307s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M87.75 87.767h4.72v4.72h-4.72z" id="XMLID_426_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.51416s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M40.577 59.425h4.72v4.72h-4.72z" id="XMLID_427_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.888227s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M40.547 68.886v4.72H49.988v-4.72h-4.721z" id="XMLID_428_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.825633s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M49.988 64.165h4.72v4.72h-4.72z" id="XMLID_429_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.1386s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M59.428 68.886h4.72v4.72h-4.72z" id="XMLID_430_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.95082s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M50.017 54.716h4.72v-9.421h-4.72v-.02h-4.691v-4.72h-4.72v4.72h4.691v4.741h-4.721v4.72H50.017z" id="XMLID_431_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.909091s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M40.606 78.318h4.72v4.72h-4.72z" id="XMLID_433_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.95082s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M40.576 87.778v4.721H50.017v-4.721h-4.72z" id="XMLID_434_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.888227s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M92.471 59.456v-4.72H87.75v4.72h-4.691v4.721H92.5v-4.721z" id="XMLID_435_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.30551s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M87.78 68.897h4.72v4.72h-4.72z" id="XMLID_483_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.53502s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M68.869 64.165v-.008h4.779v-4.721h-4.72v.009h-.03v-.009h-.029v-4.7h4.72v-4.72H59.458v4.72h4.691v4.709H54.708v4.72H64.149v4.721h4.72z" id="XMLID_485_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -0.888227s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M54.708 40.575h14.151v4.72H54.708z" id="XMLID_172_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><g class="ldl-layer" style="animation-play-state: running; animation-delay: 0s;"><g class="ldl-ani" style="transform-origin: 50px 50px; opacity: 1; animation: 1.63934s linear -1.28465s infinite normal forwards running fade-0ea853bf-2532-45d6-993e-01cb3c40fd20;"><path d="M83.03 73.606v-.009h.029v-9.42h-3.746v-.02h-4.72v4.72l-.974.02h-4.721v4.689h-4.719v.02h-.03v4.712H50.017V87.778h4.72v-4.72H64.149v4.72h-4.691v4.721h4.72v-.012h4.691V87.767h4.72v-4.72h-4.72v-.009h.029v-4.72h-.029v-.012h.03v-4.689h9.411v4.709h9.44v-4.72z" id="XMLID_179_" style="fill: rgb(21, 119, 89); animation-play-state: running; animation-delay: 0s;"/></g></g><metadata xmlns:d="https://loading.io/stock/" style="animation-play-state: running; animation-delay: 0s;"><d:name style="animation-play-state: running; animation-delay: 0s;">qr code,bar code,encode,scan</d:name><d:tags style="animation-play-state: running; animation-delay: 0s;">cc-by,qr code,bar code,encode,scan</d:tags><d:license style="animation-play-state: running; animation-delay: 0s;">by</d:license><d:slug style="animation-play-state: running; animation-delay: 0s;">jzb00u</d:slug></metadata></g></g><style id="fade-0ea853bf-2532-45d6-993e-01cb3c40fd20" data-anikit="">@keyframes fade-0ea853bf-2532-45d6-993e-01cb3c40fd20
+{
+  0% {
+    animation-timing-function: cubic-bezier(0.2057,0.573,0.3723,0.9184);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}</style><!-- [ldio] generated by https://loading.io/ --></svg>

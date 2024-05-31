@@ -1,0 +1,10 @@
+{
+  "typescript.preferences.autoImportFileExcludePatterns": ["@ionic/angular/common", "@ionic/angular/standalone"],
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+},
+"[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+},
+"typescript.tsdk": "node_modules/typescript/lib"
+}

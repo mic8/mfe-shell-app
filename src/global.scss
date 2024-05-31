@@ -1,0 +1,437 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+@import './theme/variables';
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/* --- Presets --- */
+/*Text Styles*/
+h1, h2, h3, h4, h5, h6 {
+    font-style: normal;
+    font-weight: bold;
+    line-height: 120%;
+    letter-spacing: -0.02em;
+}
+
+h1 { font-size: 3.5rem !important; }
+h2 { font-size: 3rem !important; }
+h3 { font-size: 2.5rem !important; }
+h4 { font-size: 2rem !important; }
+h5 { font-size: 1.5rem !important; }
+h6 { font-size: 1.25rem !important; }
+
+@layer utilities {
+    @responsive {
+        .h1, .h2, .h3, .h4, .h5, .h6, .h7 {
+            font-style: normal;
+            font-weight: bold;
+            line-height: 120%;
+            letter-spacing: -0.02em;
+        }
+
+        .h1 { font-size: 3.5rem !important; }
+        .h2 { font-size: 3rem !important; }
+        .h3 { font-size: 2.5rem !important; }
+        .h4 { font-size: 2rem !important; }
+        .h5 { font-size: 1.5rem !important; }
+        .h6 { font-size: 1.25rem !important; }
+        .h7 { font-size: 1.125rem !important; }
+    }
+}
+
+@layer utilities {
+    @responsive {
+        .remove-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    }
+}
+
+a {
+    cursor: pointer;
+}
+
+.rounded-hexagon {
+    clip-path: polygon(40% 7.6794919243%, 43.1595971335% 6.2061475843%, 46.5270364467% 5.3038449398%, 50% 5%, 53.4729635533% 5.3038449398%, 56.8404028665% 6.2061475843%, 60% 7.6794919243%, 81.6506350946% 20.1794919243%, 84.5063872883% 22.1791111376%, 86.971523957% 24.6442478063%, 88.9711431703% 27.5%, 90.4444875103% 30.6595971335%, 91.3467901549% 34.0270364467%, 91.6506350946% 37.5%, 91.6506350946% 62.5%, 91.3467901549% 65.9729635533%, 90.4444875103% 69.3404028665%, 88.9711431703% 72.5%, 86.971523957% 75.3557521937%, 84.5063872883% 77.8208888624%, 81.6506350946% 79.8205080757%, 60% 92.3205080757%, 56.8404028665% 93.7938524157%, 53.4729635533% 94.6961550602%, 50% 95%, 46.5270364467% 94.6961550602%, 43.1595971335% 93.7938524157%, 40% 92.3205080757%, 18.3493649054% 79.8205080757%, 15.4936127117% 77.8208888624%, 13.028476043% 75.3557521937%, 11.0288568298% 72.5%, 9.5555124898% 69.3404028665%, 8.6532098456% 65.9729635534%, 8.3493649069% 62.5000000002%, 8.3493649627% 37.5000000091%, 8.6532099059% 34.0270364563%, 9.5555125608% 30.6595971447%, 11.0288569302% 27.500000016%, 13.0284762228% 24.6442478359%, 15.4936130964% 22.1791112041%, 18.3493657979% 20.179492086%);
+    color: white;
+}
+
+.rounded-hexagon.gradient {
+    background: var(--gradient-color);
+}
+
+html {
+    overflow-x: hidden;
+}
+
+body {
+    background: #F9FAFB;
+    color: var(--ion-color-grey-dark);
+}
+
+ion-content {
+    width: 100% !important;
+    --background: #F9FAFB;
+}
+
+ion-modal {
+    ion-content {
+        --background: white !important;
+    }
+}
+
+.container {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    overflow-x: hidden;
+    height: 100%;
+    border-left: 1px solid var(--ion-color-grey-100);
+    border-right: 1px solid var(--ion-color-grey-100);
+
+    &.no-border {
+        border: none !important;
+    }
+}
+
+.container-single {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (min-width: 640px) {
+    .container {
+        max-width: 640px;
+    }
+
+    .container-single {
+        max-width: 640px;
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 768px;
+    }
+
+    .container-single {
+        max-width: 768px;
+    }
+}
+
+.snackbar-wrapper {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .snackbar-wrapper {
+        max-width: 640px;
+    }
+}
+
+@media (min-width: 768px) {
+    .snackbar-wrapper {
+        max-width: 768px;
+    }
+}
+
+.container-preset {
+    @media (min-width: 768px) {
+        margin-left: -16px;
+        margin-right: -16px;
+    }
+}
+
+.video-wrapper {
+    height: calc(100vh - 180px);
+
+    @media (max-width: 991px) {
+        height: calc(100vh - 167px);
+    }
+}
+
+ion-title {
+    color: var(--ion-color-grey-dark);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+ion-header {
+    ion-back-button {
+        width: 24px !important;
+        height: 24px !important;
+        --color: var(--ion-color-grey-dark);
+        --icon-font-size: 24px;
+        --icon-font-weight: 300;
+
+        &::part(text) {
+            display: none !important;
+        }
+    }
+}
+
+ion-toolbar {
+    --padding-top: 0;
+    --ion-toolbar-border-color: #E4E7EA;
+
+    ion-buttons {
+        position: relative;
+    }
+}
+
+ion-item {
+    --border-color: var(--ion-color-grey-200);
+    --detail-icon-opacity: 1;
+    --detail-icon-font-size: 20px;
+    --detail-icon-color: var(--ion-color-grey-400);
+    --padding-start: 16px;
+
+    @media (min-width: 640px) {
+        --padding-start: 24px;
+    }
+
+    [slot="start"] {
+        margin-inline: 0 16px !important;
+    }
+}
+
+#verihubs-container {
+    width: 650px;
+    height: auto;
+    max-width: 650px;
+    max-height: 450px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+
+    @media screen and (max-width: 670px) {
+        width: 90%;
+        height: auto;
+    }
+
+    @media screen and (max-width: 480px) {
+        width: 90%;
+        height: auto;
+    }
+
+    @media screen and (max-width: 400px) {
+        width: 90%;
+        height: auto;
+    }
+}
+
+.content-list-template {
+    ul, ol {
+        padding: 16px;
+        line-height: 120%;
+    }
+
+    ul {
+        list-style: disc;
+    }
+
+    li:not(:last-child) {
+        margin-bottom: 6px;
+    }
+}
+
+ion-modal {
+    &::part(handle) {
+        display: none !important;
+    }
+}
+
+ion-app.has-camera,
+ion-app.has-camera ion-content {
+    --background: transparent;
+    background: transparent !important;
+}
+
+ion-modal {
+    --width: 100%;
+    --border-radius: 0 !important;
+    --height: 100% !important;
+
+    @media (min-width: 768px) {
+        --width: 768px;
+        --border-radius: 12px !important;
+    }
+}
+
+ion-label {
+    white-space: normal !important;
+
+    ::ng-deep {
+        white-space: normal !important;
+    }
+}
+
+.scanner-ui { display: none; }
+.scanner-hide { visibility: visible; }
+
+body.qrscanner { background-color: transparent;  --background: transparent; --ion-background-color: transparent; }
+body.qrscanner .scanner-hide { visibility: hidden; }
+
+body.qrscanner {
+    #video {
+        object-fit: cover !important;
+    }
+
+    #qr-video-stream {
+        width: 100%;
+        height: 100%;
+        object-fit: cover !important;
+    }
+
+    .scanner-ui {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        z-index: 50;
+        position: relative;
+
+        .toolbar {
+            --min-height: calc(56px + constant(safe-area-inset-top));
+            --min-height: calc(56px + env(safe-area-inset-top));
+            height: calc(56px + constant(safe-area-inset-top));
+            height: calc(56px + env(safe-area-inset-top));
+            margin-bottom: -1px;
+            --padding-start: 0;
+            --padding-end: 0;
+            padding-top: calc(constant(safe-area-inset-top) - calc(constant(safe-area-inset-top) / 2)) !important;
+            padding-top: calc(env(safe-area-inset-top) - calc(env(safe-area-inset-top) / 2)) !important;
+            color: white;
+
+            .title {
+                font-weight: 700;
+                font-size: 16px;
+            }
+        }
+
+        .square {
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .square:after {
+            content: '';
+            top: 0;
+            display: block;
+            padding-bottom: 100%;
+        }
+
+        .square > div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+        }
+        .surround-cover {
+            box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.5);
+        }
+        .barcode-scanner--area--container {
+            width: 80%;
+            max-width: min(500px, 80vh);
+            margin: auto;
+            padding: 20px;
+            position: relative;
+        }
+        .barcode-scanner--area--outer {
+            display: flex;
+            padding: 1rem;
+        }
+
+        .boundary-wrapper {
+            border: 2px solid white;
+            position: absolute;
+            z-index: 999;
+            height: 100%;
+            width: 100%;
+            border-radius: 30px;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .boundary {
+            position: absolute;
+            z-index: 999;
+            width: 40px;
+            height: 40px;
+        }
+
+        .boundary-tl {
+            top: 0;
+            left: 0;
+            border-top: 4px solid white;
+            border-left: 4px solid white;
+        }
+
+        .boundary-tr {
+            top: 0;
+            right: 0;
+            border-top: 4px solid white;
+            border-right: 4px solid white;
+        }
+
+        .boundary-bl {
+            bottom: 0;
+            left: 0;
+            border-bottom: 4px solid white;
+            border-left: 4px solid white;
+        }
+
+        .boundary-br {
+            bottom: 0;
+            right: 0;
+            border-bottom: 4px solid white;
+            border-right: 4px solid white;
+        }
+    }
+
+    #liveness-instruction {
+        top: calc(constant(safe-area-inset-top) - calc(constant(safe-area-inset-top) / 2)) !important;
+        top: calc(env(safe-area-inset-top) - calc(env(safe-area-inset-top) / 2)) !important;
+    }
+
+    #liveness-close-button {
+        top: calc(calc(constant(safe-area-inset-top) - calc(constant(safe-area-inset-top) / 2)) + 24px) !important;
+        top: calc(calc(env(safe-area-inset-top) - calc(env(safe-area-inset-top) / 2)) + 24px) !important;
+    }
+}
